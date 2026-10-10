@@ -94,7 +94,7 @@ class SyncService {
               'id': 'site-${e['id']}',
               'title': e['title'],
               'price': e['price'],
-              'section': _sectionOf(e['section']?.toString() ?? ''),
+              'section': ((e['section']?.toString() ?? '').isNotEmpty) ? e['section'].toString() : 'كتب',
               'emoji': '📚',
               'desc': e['description']?.toString() ?? '',
               'remoteImage': e['image']?.toString() ?? '',
@@ -112,13 +112,6 @@ class SyncService {
       }
     } catch (_) {/* صامت */}
     return null;
-  }
-
-  static String _sectionOf(String s) {
-    if (s.contains('دورة')) return 'دورات';
-    if (s.contains('قالب')) return 'قوالب';
-    if (s.contains('مجاني')) return 'مجاني';
-    return 'كتب';
   }
 
   String _now() {
