@@ -1,0 +1,73 @@
+name: بناء AAB موقّع — نسخة العملاء لقوقل بلاي
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: تهيئة Android + مفتاح التوقيع
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          flutter create -t app --platforms android --org dev.dhfa --project-name dhfa_app .
+          rm -rf test analysis_options.y*ml
+          rm -rf android/app/src/main/res/mipmap-*
+          cp -rf android_res_icons/* android/app/src/main/res/
+          rm -rf android_res_icons
+          sed -i 's/android:label="dhfa_app"/android:label="دهفة"/' android/app/src/main/AndroidManifest.xml
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/dhfa-release.jks
+
+      - name: إعداد التوقيع في gradle
+        run: |
+          cat > android/gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          kotlin.compiler.executionStrategy=in-process
+          android.useAndroidX=true
+          PROPS
+          python3 - <<'PY'
+          p='android/app/build.gradle'
+          s=open(p).read()
+          block='''signingConfigs {
+        release {
+            storeFile file("/tmp/dhfa-release.jks")
+            storePassword System.getenv("KEYSTORE_PASS")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASS")
+        }
+    }
+    buildTypes {'''
+          assert 'buildTypes {' in s
+          s = s.replace('buildTypes {', block, 1)
+          s = s.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
+          open(p,'w').write(s)
+          print('gradle signing injected')
+          PY
+
+      - name: بناء AAB موقع (نسخة العملاء)
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: flutter pub get && flutter build appbundle --release --dart-define=DHFA_CUSTOMER=true
+
+      - name: رفع AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: dhfa-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
