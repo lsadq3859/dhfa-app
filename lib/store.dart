@@ -13,8 +13,10 @@ class LocalStore extends ChangeNotifier {
   static const _kSales = 'dhfa_sales_today';
   static const _kAds = 'dhfa_ads';
   static const _kPw = 'dhfa_pw_hash';
+  static const _kRemote = 'dhfa_remote_products';
 
   List<Product> products = [];
+  List<Product> remoteProducts = []; // منتجات منشورة على الموقع (تُجلب بالمزامنة)
   List<Order> orders = [];
   List<Ad> ads = [];
   int pendingOrders = 4; // تجريبي حتى ربط واجهة الموقع v1.9
@@ -47,6 +49,10 @@ class LocalStore extends ChangeNotifier {
     final rawOrders = sp.getString(_kOrdersList);
     if (rawOrders != null && rawOrders.isNotEmpty) {
       orders = Order.decodeList(rawOrders);
+    }
+    final rawRemote = sp.getString(_kRemote);
+    if (rawRemote != null && rawRemote.isNotEmpty) {
+      remoteProducts = Product.decodeList(rawRemote);
     }
     lastSync = sp.getString(_kLastSync) ?? lastSync;
     pendingOrders = sp.getInt(_kOrders) ?? pendingOrders;
@@ -145,6 +151,14 @@ class LocalStore extends ChangeNotifier {
     await sp.setString(_kPw, _pwHash);
     notifyListeners();
     return null;
+  }
+
+  /// حفظ المنتجات المنشورة على الموقع (القادمة من API المزامنة)
+  Future<void> setRemoteProducts(List<Product> items) async {
+    remoteProducts = items;
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_kRemote, Product.encodeList(items));
+    notifyListeners();
   }
 
   /// تحديث عدد الطلبات المعلّقة القادم من الموقع

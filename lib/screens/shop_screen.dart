@@ -24,14 +24,14 @@ class _ShopScreenState extends State<ShopScreen> {
       final all = widget.store.products;
       final items = chip == 0 ? all : all.where((p) => p.section == sections[chip]).toList();
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Padding(padding: EdgeInsets.fromLTRB(16, 14, 16, 4), child: Text('المتجر',
+        Padding(padding: EdgeInsets.fromLTRB(16, 14, 16, 4), child: Text('المتجر',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Dhfa.navy))),
         SizedBox(height: 46, child: ListView(scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16), children: [
           for (var i = 0; i < chips.length; i++) _chip(i),
         ])),
         Expanded(child: items.isEmpty
-            ? const Center(child: Padding(padding: EdgeInsets.all(30), child: Text(
+            ? Center(child: Padding(padding: EdgeInsets.all(30), child: Text(
                 'لا توجد منتجات في هذا القسم بعد\nأضفها من زر + أو من الإعدادات',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Dhfa.muted, fontWeight: FontWeight.w700, height: 1.8))))
@@ -62,19 +62,19 @@ class _ShopScreenState extends State<ShopScreen> {
     child: Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)]), child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Expanded(child: Container(decoration: const BoxDecoration(gradient: Dhfa.heroGradient,
+      Expanded(child: Container(decoration: BoxDecoration(gradient: Dhfa.heroGradient,
           borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
         child: Center(child: Text(p.emoji, style: const TextStyle(fontSize: 34))))),
       Padding(padding: const EdgeInsets.all(10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(p.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Dhfa.navy, height: 1.5)),
+            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Dhfa.navy, height: 1.5)),
         const SizedBox(height: 5),
         Row(children: [
           Text(p.isFree ? 'مجاني' : '${p.price} ر.ي',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Dhfa.green)),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Dhfa.green)),
           const Spacer(),
-          if (p.hasFile) const Icon(Icons.attach_file_rounded, size: 14, color: Dhfa.gold2),
-          if (!p.synced) const Text('💾 محلي', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Dhfa.gold2)),
+          if (p.hasFile) Icon(Icons.attach_file_rounded, size: 14, color: Dhfa.gold2),
+          if (!p.synced) Text('💾 محلي', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Dhfa.gold2)),
         ]),
       ])),
     ])));
@@ -89,23 +89,23 @@ class _ShopScreenState extends State<ShopScreen> {
         Center(child: Text(p.emoji, style: const TextStyle(fontSize: 60))),
         const SizedBox(height: 10),
         Text(p.title, textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Dhfa.navy)),
         const SizedBox(height: 6),
         Text(p.isFree ? 'مجاني — تحميل مباشر' : '${p.price} ريال يمني', textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: Dhfa.green)),
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: Dhfa.green)),
         const SizedBox(height: 8),
         Text(p.desc.isEmpty
             ? (p.isFree
                 ? 'محتوى مجاني — اضغط زر «تحميل مجاني» للحصول على الملف'
                 : 'كتاب PDF · عربي · تحميل فوري بعد تأكيد الدفع بالمحفظة (جيب/فلوسك)')
             : p.desc,
-            textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Dhfa.muted, height: 1.8)),
+            textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: Dhfa.muted, height: 1.8)),
         if (p.hasFile) ...[
           const SizedBox(height: 8),
           Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(color: const Color(0xFFFFF3D6), borderRadius: BorderRadius.circular(999)),
             child: Text('📎 ${p.fileName.isEmpty ? 'ملف مرفق' : p.fileName}',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Dhfa.gold2)))),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Dhfa.gold2)))),
         ],
         const SizedBox(height: 14),
         if (p.isFree)
@@ -135,7 +135,7 @@ class _ShopScreenState extends State<ShopScreen> {
       textDirection: TextDirection.rtl,
       child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('الدفع بالمحفظة', style: TextStyle(fontWeight: FontWeight.w900, color: Dhfa.navy, fontSize: 16)),
+        title: Text('الدفع بالمحفظة', style: TextStyle(fontWeight: FontWeight.w900, color: Dhfa.navy, fontSize: 16)),
         content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(width: double.infinity, padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(color: Dhfa.navy, borderRadius: BorderRadius.circular(12)),
@@ -144,7 +144,7 @@ class _ShopScreenState extends State<ShopScreen> {
           const SizedBox(height: 10),
           const Text('🟡 جيب: 772 092 700', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
           const SizedBox(height: 6),
-          const Text('🟣 فلوسك: يُضبط من الإعدادات', style: TextStyle(color: Dhfa.muted, fontSize: 12.5)),
+          Text('🟣 فلوسك: يُضبط من الإعدادات', style: TextStyle(color: Dhfa.muted, fontSize: 12.5)),
           const SizedBox(height: 10),
           Text('المبلغ: ${p.price} ر.ي — حوّل ثم أدخل الرقم المرجعي هنا',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800)),
@@ -172,7 +172,7 @@ class _ShopScreenState extends State<ShopScreen> {
       textDirection: TextDirection.rtl,
       child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(children: [
+        title: Row(children: [
           Icon(Icons.check_circle_rounded, color: Dhfa.green),
           SizedBox(width: 8),
           Text('تم استلام طلبك ✅', style: TextStyle(fontWeight: FontWeight.w900, color: Dhfa.navy, fontSize: 15)),
@@ -183,7 +183,7 @@ class _ShopScreenState extends State<ShopScreen> {
           Text('رقم الطلب: ${order.id}',
               style: const TextStyle(fontSize: 12.5, height: 1.8, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          const Text('الحالة: بانتظار تأكيد التحويل — ستجده في الرئيسية → الطلبات',
+          Text('الحالة: بانتظار تأكيد التحويل — ستجده في الرئيسية → الطلبات',
               style: TextStyle(fontSize: 11.5, color: Dhfa.muted, height: 1.8)),
         ]),
         actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('حسناً'))],

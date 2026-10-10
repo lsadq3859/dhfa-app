@@ -4,6 +4,7 @@ import '../theme.dart';
 import '../store.dart';
 import '../models.dart';
 import '../sync_service.dart';
+import 'request_screen.dart';
 
 /// الرئيسية — هيكل فلوسك: شريط علوي، بطاقة متدرجة، دوائر سريعة، شبكة خدمات، بانر إعلانات متحرك
 class HomeScreen extends StatefulWidget {
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CircleAvatar(radius: 19, backgroundColor: Dhfa.gold,
               child: const Text('ص', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16))),
           const SizedBox(width: 8),
-          const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('مساء الخير', style: TextStyle(fontSize: 10, color: Dhfa.muted)),
             Text('صادق', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Dhfa.navy)),
           ]),
@@ -69,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(999),
                 boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)]),
-            child: const Row(children: [
+            child: Row(children: [
               Icon(Icons.search, size: 18, color: Dhfa.muted), SizedBox(width: 6),
               Expanded(child: Text('ابحث عن كتاب أو ملخص…', overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12.5, color: Dhfa.muted))),
@@ -93,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
               GestureDetector(onTap: _refresh, child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(color: Colors.white.withOpacity(.92), borderRadius: BorderRadius.circular(999)),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(Icons.refresh, size: 13, color: Dhfa.navy), SizedBox(width: 5),
                   Text('تحديث البيانات', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Dhfa.navy)),
                 ]))),
@@ -127,12 +128,21 @@ class _HomeScreenState extends State<HomeScreen> {
           _svc(Icons.format_list_bulleted_rounded, 'منتجاتي', onTap: () => widget.onGoTab(3)),
           _svc(Icons.fact_check_outlined, 'الطلبات', badge: st.pendingOrders, onTap: _ordersSheet),
           _svc(Icons.campaign_outlined, 'الإعلانات', onTap: () => widget.onGoTab(3)),
-          _svc(Icons.bar_chart_rounded, 'التقارير', onTap: () => widget.onGoTab(2)),
+          _svc(Icons.bar_chart_rounded, 'التقارير', onTap: _showStats),
           _svc(Icons.groups_rounded, 'العملاء', onTap: () => _snack('👥 138 عميلاً مسجلاً')),
-          _svc(Icons.sync_rounded, 'المزامنة', ribbon: 'جديدنا', onTap: () => widget.onGoTab(2)),
+          _svc(Icons.sync_rounded, 'المزامنة', onTap: () => widget.onGoTab(2)),
           _svc(Icons.support_agent_rounded, 'الدعم', onTap: () => _snack('🛟 sadeqali2211@gmail.com')),
           _svc(Icons.settings_rounded, 'الإعدادات', onTap: () => widget.onGoTab(3)),
         ])),
+        // ——— زر نافذة الطلب ———
+        Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), child: SizedBox(width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: Dhfa.gold, foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+            onPressed: () => showRequestDialog(context, widget.sync),
+            icon: const Icon(Icons.volunteer_activism_rounded),
+            label: Text('🙋 اطلب واحنا نلبي — نافذة الطلب', style: TextStyle(fontWeight: FontWeight.w900))))),
         // ——— بانر الإعلانات المتحرك ———
         Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 6), child: Column(children: [
           AnimatedSwitcher(duration: const Duration(milliseconds: 500),
@@ -179,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)]),
         child: Icon(ic, size: 21, color: Dhfa.navy)),
       const SizedBox(height: 5),
-      Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
+      Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
     ]));
 
   Widget _svc(IconData ic, String label, {int badge = 0, String? ribbon, VoidCallback? onTap}) =>
@@ -190,13 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(ic, size: 22, color: Dhfa.navy),
           const SizedBox(height: 6),
-          Text(label, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
+          Text(label, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
         ])),
       if (badge > 0) Positioned(top: 6, left: 8, child: CircleAvatar(radius: 10, backgroundColor: Dhfa.gold2,
           child: Text('$badge', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)))),
       if (ribbon != null) Positioned(top: 0, right: 0, child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: const BoxDecoration(color: Dhfa.gold2,
+        decoration: BoxDecoration(color: Dhfa.gold2,
             borderRadius: BorderRadius.only(topRight: Radius.circular(18), bottomLeft: Radius.circular(14))),
         child: Text(ribbon, style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.w900)))),
     ]));
@@ -210,13 +220,13 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(padding: const EdgeInsets.all(18), child: Column(
           mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            const Text('🧾 طلبات المحفظة', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+            Text('🧾 طلبات المحفظة', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Dhfa.navy)),
             const Spacer(),
-            Text('${st.orders.length} طلب', style: const TextStyle(fontSize: 11, color: Dhfa.muted, fontWeight: FontWeight.w700)),
+            Text('${st.orders.length} طلب', style: TextStyle(fontSize: 11, color: Dhfa.muted, fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 10),
           if (st.orders.isEmpty)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 24),
+            Padding(padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(child: Text('لا توجد طلبات بعد\nتظهر هنا عند إتمام عملية شراء',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Dhfa.muted, fontWeight: FontWeight.w700, height: 1.8)))),
@@ -230,17 +240,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(children: [
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(o.productTitle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: Dhfa.navy)),
                       const SizedBox(height: 3),
                       Text('${o.price} ر.ي · مرجع: ${o.ref.isEmpty ? '—' : o.ref} · ${o.time}',
-                          style: const TextStyle(fontSize: 10.5, color: Dhfa.muted)),
+                          style: TextStyle(fontSize: 10.5, color: Dhfa.muted)),
                     ])),
                     Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                       decoration: BoxDecoration(borderRadius: BorderRadius.circular(999), color: const Color(0xFFFFF3D6)),
-                      child: Text(o.status, style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: Dhfa.gold2))),
+                      child: Text(o.status, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: Dhfa.gold2))),
                   ]));
               })),
         ])))));
+  }
+
+  /// تقرير سريع (dialog)
+  void _showStats() {
+    final st = widget.store;
+    showDialog(context: context, builder: (ctx) => Directionality(
+      textDirection: TextDirection.rtl, child: AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('📊 تقرير سريع', style: TextStyle(fontWeight: FontWeight.w900, color: Dhfa.navy)),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('💰 مبيعاتي اليوم: ${st.salesToday} ر.ي', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+        SizedBox(height: 6),
+        Text('🧾 طلبات اليوم: ${st.pendingOrders}', style: TextStyle(fontSize: 13)),
+        SizedBox(height: 6),
+        Text('📦 المنتجات: ${st.products.length} (متزامن: ${st.products.where((p) => p.synced).length})', style: TextStyle(fontSize: 13)),
+        SizedBox(height: 6),
+        Text('📥 منتجات الموقع: ${st.remoteProducts.length}', style: TextStyle(fontSize: 13)),
+        SizedBox(height: 6),
+        Text('🕒 آخر مزامنة: ${st.lastSync}', style: TextStyle(fontSize: 13)),
+      ]),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('فهمت'))],
+    )));
   }
 
   Future<void> _refresh() async {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'models.dart';
 import 'store.dart';
 
 /// خدمة المزامنة مع موقع دهفة الحي (واجهة v1.9):
@@ -75,6 +76,39 @@ class SyncService {
       }
     } catch (_) {/* صامت: تبقى القيمة المحلية */}
     return null;
+  }
+
+  /// سحب المنتجات المنشورة على الموقع (الكتب والدورات) — تُحفظ وتُعرض في التطبيق
+  Future<int?> fetchProducts(LocalStore store) async {
+    if (apiKey.isEmpty) return null;
+    try {
+      final res = await http.get(
+        Uri.parse('$baseUrl/api/sync/products?key=${Uri.encodeComponent(apiKey)}'),
+      ).timeout(const Duration(seconds: 25));
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final list = (body['products'] as List?) ?? [];
+        final items = list.map((e) => Product.fromJson({
+              'id': 'site-${e['id']}',
+              'title': e['title'],
+              'price': e['price'],
+              'section': _sectionOf(e['section']?.toString() ?? ''),
+              'emoji': '📚',
+              'desc': e['description']?.toString() ?? '',
+              'synced': true,
+            })).toList();
+        await store.setRemoteProducts(items);
+        return items.length;
+      }
+    } catch (_) {/* صامت */}
+    return null;
+  }
+
+  static String _sectionOf(String s) {
+    if (s.contains('دورة')) return 'دورات';
+    if (s.contains('قالب')) return 'قوالب';
+    if (s.contains('مجاني')) return 'مجاني';
+    return 'كتب';
   }
 
   String _now() {

@@ -60,7 +60,7 @@ class _AdminScreenState extends State<AdminScreen> {
         ])),
       // ——— إضافة منتج ———
       _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('➕ إضافة منتج جديد', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+        Text('➕ إضافة منتج جديد', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
         const SizedBox(height: 10),
         _in(title, 'اسم المنتج'),
         const SizedBox(height: 8),
@@ -97,10 +97,10 @@ class _AdminScreenState extends State<AdminScreen> {
       AnimatedBuilder(animation: st, builder: (_, __) => _box(Column(
           crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Text('📣 الإعلانات', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+          Text('📣 الإعلانات', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
           const Spacer(),
           Text('${st.ads.length} إعلان · يظهر في الرئيسية',
-              style: const TextStyle(fontSize: 10, color: Dhfa.muted, fontWeight: FontWeight.w700)),
+              style: TextStyle(fontSize: 10, color: Dhfa.muted, fontWeight: FontWeight.w700)),
         ]),
         const SizedBox(height: 8),
         _in(adTitle, 'نص الإعلان'),
@@ -113,7 +113,7 @@ class _AdminScreenState extends State<AdminScreen> {
         const SizedBox(height: 8),
         SizedBox(width: double.infinity, child: OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: Dhfa.navy,
-              side: const BorderSide(color: Dhfa.navy),
+              side: BorderSide(color: Dhfa.navy),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
           onPressed: _saveAd,
           icon: const Icon(Icons.add_rounded),
@@ -127,17 +127,17 @@ class _AdminScreenState extends State<AdminScreen> {
               Text(a.emoji, style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 8),
               Expanded(child: Text(a.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Dhfa.navy))),
+                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Dhfa.navy))),
               Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(color: Dhfa.gold, borderRadius: BorderRadius.circular(999)),
                 child: Text(a.badge, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900))),
-              IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Dhfa.red, size: 19),
+              IconButton(icon: Icon(Icons.delete_outline_rounded, color: Dhfa.red, size: 19),
                   onPressed: () => widget.store.removeAd(a.id)),
             ])),
       ]))),
       // ——— كلمة المرور ———
       _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('🔐 تغيير كلمة المرور', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+        Text('🔐 تغيير كلمة المرور', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
         const SizedBox(height: 8),
         _in(oldPw, 'كلمة المرور الحالية', t: TextInputType.visiblePassword, obscure: true),
         const SizedBox(height: 8),
@@ -153,11 +153,11 @@ class _AdminScreenState extends State<AdminScreen> {
           icon: const Icon(Icons.lock_reset_rounded),
           label: const Text('تحديث كلمة المرور', style: TextStyle(fontWeight: FontWeight.w900)))),
         const SizedBox(height: 6),
-        const Text('تُحفظ مشفرة (SHA-256) على جهازك فقط — لا تُرسل إلى أي مكان',
+        Text('تُحفظ مشفرة (SHA-256) على جهازك فقط — لا تُرسل إلى أي مكان',
             style: TextStyle(fontSize: 10, color: Dhfa.muted)),
       ])),
       // ——— منتجاتي ———
-      const Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 6),
+      Padding(padding: EdgeInsets.fromLTRB(16, 4, 16, 6),
         child: Text('منتجاتي', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Dhfa.navy))),
       AnimatedBuilder(animation: st, builder: (_, __) => Column(children: [
         for (final p in st.products)
@@ -172,11 +172,11 @@ class _AdminScreenState extends State<AdminScreen> {
               const SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Dhfa.navy)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Dhfa.navy)),
                 Text(p.isFree
                     ? 'مجاني · ${p.section}${p.hasFile ? ' · 📎 ملف' : ''}'
                     : '${p.price} ر.ي · ${p.section}${p.hasFile ? ' · 📎 ملف' : ''}',
-                    style: const TextStyle(fontSize: 10, color: Dhfa.muted)),
+                    style: TextStyle(fontSize: 10, color: Dhfa.muted)),
               ])),
               Container(padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(999),
@@ -186,6 +186,21 @@ class _AdminScreenState extends State<AdminScreen> {
                         color: p.synced ? Dhfa.green : Dhfa.gold2))),
             ])),
       ])),
+      // ——— لوحة الألوان ———
+      ListenableBuilder(listenable: Dhfa.palette, builder: (_, __) => Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16), padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('🎨 لوحة الألوان', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+          SizedBox(height: 4),
+          Text('اختر لون التطبيق — يتغير فوراً', style: TextStyle(fontSize: 11, color: Dhfa.muted)),
+          SizedBox(height: 10),
+          Wrap(spacing: 10, runSpacing: 10, children: [
+            for (final p in Palettes.all) _paletteDot(p),
+          ]),
+        ]))),
+
     ]);
 
     final wrapped = SafeArea(child: body);
@@ -212,7 +227,7 @@ class _AdminScreenState extends State<AdminScreen> {
               color: fileName == null ? Dhfa.muted : Dhfa.navy))),
         if (fileName != null)
           GestureDetector(onTap: () => setState(() { fileName = null; filePath = null; }),
-            child: const Icon(Icons.close_rounded, size: 17, color: Dhfa.red)),
+            child: Icon(Icons.close_rounded, size: 17, color: Dhfa.red)),
       ])));
 
   Future<void> _pickFile() async {
@@ -227,6 +242,32 @@ class _AdminScreenState extends State<AdminScreen> {
       if (mounted) _snack('⚠️ تعذر اختيار الملف');
     }
     if (mounted) setState(() => picking = false);
+  }
+
+  Widget _paletteDot(Palette p) {
+    final on = Dhfa.palette.current.id == p.id;
+    return GestureDetector(onTap: () async {
+      Dhfa.apply(p);
+      await Dhfa.palette.save(p.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('🎨 تم تطبيق لوحة: ${p.name}'),
+          behavior: SnackBarBehavior.floating));
+    },
+    child: Container(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(color: on ? Dhfa.navy : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: on ? Dhfa.navy : Color(0xFFE4E0D4), width: 1.5)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 16, height: 16, decoration: BoxDecoration(color: p.navy, shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 1))),
+        SizedBox(width: 4),
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: p.gold, shape: BoxShape.circle)),
+        SizedBox(width: 8),
+        Text(p.name, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800,
+            color: on ? Color(0xFFE7CF8E) : Dhfa.navy)),
+        if (on) ...[SizedBox(width: 6), Icon(Icons.check_circle, size: 15, color: Color(0xFFE7CF8E))],
+      ])));
   }
 
   Future<void> _save() async {
@@ -267,7 +308,7 @@ class _AdminScreenState extends State<AdminScreen> {
   }
 
   InputDecoration _dec(String label) => InputDecoration(labelText: label,
-    labelStyle: const TextStyle(fontSize: 11.5, color: Dhfa.muted, fontWeight: FontWeight.w700),
+    labelStyle: TextStyle(fontSize: 11.5, color: Dhfa.muted, fontWeight: FontWeight.w700),
     filled: true, fillColor: const Color(0xFFFBFAF6),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE5E0D2))),

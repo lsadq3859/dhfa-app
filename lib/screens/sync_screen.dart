@@ -50,14 +50,15 @@ class _SyncScreenState extends State<SyncScreen> {
               : Icon(Icons.sync_rounded, size: 46, color: widget.offline ? Dhfa.gold2 : Dhfa.green))),
         const SizedBox(height: 12),
         Text(stateLine, textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Dhfa.navy)),
         Text(subLine, textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: Dhfa.muted)),
+            style: TextStyle(fontSize: 11, color: Dhfa.muted)),
         const SizedBox(height: 16),
         _box(Column(children: [
           _row('📤 منتجات بانتظار الرفع', '${st.pendingSync}'),
           _row('📥 طلبات معلقة بالموقع', '${st.pendingOrders}'),
-          _row('💾 المنتجات على جهازك', '${st.products.length}', last: true),
+          _row('💾 المنتجات على جهازك', '${st.products.length}'),
+          _row('📚 منتجات منشورة على الموقع', '${st.remoteProducts.length}', last: true),
         ])),
         const SizedBox(height: 14),
         ElevatedButton.icon(
@@ -71,7 +72,7 @@ class _SyncScreenState extends State<SyncScreen> {
         const SizedBox(height: 12),
         // إعدادات الربط مع الموقع
         _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('🔗 إعدادات الربط مع موقعك (مرة واحدة)',
+          Text('🔗 إعدادات الربط مع موقعك (مرة واحدة)',
               style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
           const SizedBox(height: 8),
           TextField(controller: baseCtrl, textDirection: TextDirection.ltr,
@@ -82,23 +83,44 @@ class _SyncScreenState extends State<SyncScreen> {
           const SizedBox(height: 10),
           SizedBox(width: double.infinity, child: OutlinedButton.icon(
             style: OutlinedButton.styleFrom(foregroundColor: Dhfa.navy,
-                side: const BorderSide(color: Dhfa.navy),
+                side: BorderSide(color: Dhfa.navy),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             onPressed: _saveLink,
             icon: const Icon(Icons.save_rounded),
             label: const Text('حفظ الربط', style: TextStyle(fontWeight: FontWeight.w900)))),
           const SizedBox(height: 6),
-          const Text('المفتاح يُضبط من متغير DHFA_SYNC_API_KEY في Railway وتُدخله هنا مرة واحدة — لا يغادر جهازك إلا مشفراً عبر https.',
+          Text('المفتاح يُضبط من متغير DHFA_SYNC_API_KEY في Railway وتُدخله هنا مرة واحدة — لا يغادر جهازك إلا مشفراً عبر https.',
               style: TextStyle(fontSize: 10.5, color: Dhfa.muted, height: 1.8)),
         ])),
         const SizedBox(height: 10),
+        // ——— منتجات الموقع (المنشورات) ———
+        _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('📚 منتجات منشورة على الموقع', style: TextStyle(
+              fontSize: 12.5, fontWeight: FontWeight.w900, color: Dhfa.navy)),
+          SizedBox(height: 8),
+          if (st.remoteProducts.isEmpty)
+            Text('لم تُسحب بعد — اضغط «مزامنة الآن»', style: TextStyle(fontSize: 11.5, color: Dhfa.muted)),
+          for (final p in st.remoteProducts.take(10))
+            Container(padding: EdgeInsets.symmetric(vertical: 7),
+              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFEAE5D6)))),
+              child: Row(children: [
+                Expanded(child: Text(p.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Dhfa.navy))),
+                Text(p.price == 0 ? 'مجاني' : '${p.price} ر.ي',
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: Dhfa.green)),
+              ])),
+          if (st.remoteProducts.length > 10)
+            Text('+ ${st.remoteProducts.length - 10} منتجاً آخر…',
+                style: TextStyle(fontSize: 10.5, color: Dhfa.muted)),
+        ])),
+        SizedBox(height: 10),
         _box(const Text('🔒 أمان المزامنة: تُرفع المنتجات والإعلانات فقط، وتُسحب الطلبات من الموقع — فلا تتعارض المبيعات الحية أبداً.',
             style: TextStyle(fontSize: 11.5, height: 1.9, color: Color(0xFF6B5320)))),
       ])));
   }
 
   InputDecoration _dec(String label) => InputDecoration(labelText: label,
-    labelStyle: const TextStyle(fontSize: 11.5, color: Dhfa.muted, fontWeight: FontWeight.w700),
+    labelStyle: TextStyle(fontSize: 11.5, color: Dhfa.muted, fontWeight: FontWeight.w700),
     filled: true, fillColor: const Color(0xFFFBFAF6),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE5E0D2))),
@@ -113,7 +135,7 @@ class _SyncScreenState extends State<SyncScreen> {
     decoration: BoxDecoration(border: last ? null : const Border(bottom: BorderSide(
         color: Color(0xFFEAE5D6)))),
     child: Row(children: [Text(a, style: const TextStyle(fontSize: 12.5, color: Color(0xFF4A5468))),
-      const Spacer(), Text(b, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Dhfa.navy))]));
+      const Spacer(), Text(b, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Dhfa.navy))]));
 
   Future<void> _saveLink() async {
     await widget.sync.saveSettings(baseCtrl.text, keyCtrl.text);
@@ -136,10 +158,14 @@ class _SyncScreenState extends State<SyncScreen> {
     setState(() => busy = true);
     final msg = await widget.sync.pushPending(widget.store);
     final pulled = await widget.sync.fetchPendingOrders(widget.store);
+    final prods = await widget.sync.fetchProducts(widget.store);
     if (!mounted) return;
     setState(() => busy = false);
+    final parts = <String>[msg];
+    if (pulled != null) parts.add('الطلبات المعلقة: $pulled');
+    if (prods != null) parts.add('المنتجات على الموقع: $prods');
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(pulled != null ? '$msg · الطلبات المعلقة: $pulled' : msg),
+      content: Text(parts.join(' · ')),
       behavior: SnackBarBehavior.floating));
   }
 }

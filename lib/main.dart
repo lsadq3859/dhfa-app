@@ -13,14 +13,16 @@ void main() => runApp(const DhfaApp());
 class DhfaApp extends StatelessWidget {
   const DhfaApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'دهفة — رفيق الطالب الجامعي',
-    debugShowCheckedModeBanner: false,
-    theme: Dhfa.theme(),
-    locale: const Locale('ar'),
-    builder: (ctx, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
-    home: const LoginGate(),
-  );
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Dhfa.palette,
+    builder: (context, _) => MaterialApp(
+      title: 'دهفة — رفيق الطالب الجامعي',
+      debugShowCheckedModeBanner: false,
+      theme: Dhfa.theme(),
+      locale: const Locale('ar'),
+      builder: (ctx, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+      home: const LoginGate(),
+    ));
 }
 
 /// بوابة الدخول ثم الغلاف الرئيسي
@@ -42,6 +44,7 @@ class _LoginGateState extends State<LoginGate> {
     store.addListener(_onStore);
     store.load();
     sync.restore();
+    Dhfa.palette.restore();
   }
 
   void _onStore() {
@@ -112,7 +115,7 @@ class _MainShellState extends State<MainShell> {
           _tab(0, Icons.home_rounded, 'الرئيسية'),
           _tab(1, Icons.storefront_rounded, 'المتجر'),
           const SizedBox(width: 56),
-          _tab(2, Icons.bar_chart_rounded, 'التقارير'),
+          _tab(2, Icons.sync_rounded, 'المزامنة'),
           _tab(3, Icons.settings_rounded, 'الإعدادات'),
         ])),
       ),
