@@ -17,6 +17,11 @@ class LocalStore extends ChangeNotifier {
 
   List<Product> products = [];
   List<Product> remoteProducts = []; // منتجات منشورة على الموقع (تُجلب بالمزامنة)
+  List<Ad> remoteAds = [];
+  List<Map<String, dynamic>> remoteCategories = [];
+  List<Map<String, dynamic>> remoteCoupons = [];
+  List<Map<String, dynamic>> remoteOrders = [];
+  String siteBase = 'https://dhfa-production.up.railway.app';
   List<Order> orders = [];
   List<Ad> ads = [];
   int pendingOrders = 4; // تجريبي حتى ربط واجهة الموقع v1.9
@@ -75,7 +80,7 @@ class LocalStore extends ChangeNotifier {
         fileName: 'dummy.pdf'),
   ];
 
-  List<Ad> _seedAds() => const [
+  List<Ad> _seedAds() => [
     Ad(id: 'a1', title: 'خصم افتتاحي 30% على كتاب «أساسيات أدوات الذكاء الاصطناعي»', emoji: '🤖📘', badge: 'جديد'),
     Ad(id: 'a2', title: 'أضف منتجك الأول اليوم — يظهر في متجرك فوراً', emoji: '📱✨', badge: '🚀 انطلق'),
     Ad(id: 'a3', title: 'قسم «التخصصات»: مسارات تعلّم لكل كلية — قريباً', emoji: '🎓📚', badge: 'رفيق الطالب'),
@@ -99,11 +104,12 @@ class LocalStore extends ChangeNotifier {
   /// إضافة منتج محلياً (يعمل بلا إنترنت — يرتفع عند المزامنة)
   Future<void> addProduct({required String title, required int price, required String section,
       required String emoji, String desc = '', String fileUrl = '',
-      String filePath = '', String fileName = ''}) async {
+      String filePath = '', String fileName = '', String imagePath = ''}) async {
     products.insert(0, Product(
       id: 'p${DateTime.now().millisecondsSinceEpoch}',
       title: title, price: price, section: section, emoji: emoji,
-      desc: desc, fileUrl: fileUrl, filePath: filePath, fileName: fileName, synced: false));
+      desc: desc, fileUrl: fileUrl, filePath: filePath, fileName: fileName,
+      imagePath: imagePath, synced: false));
     await _save();
     notifyListeners();
   }
@@ -127,9 +133,9 @@ class LocalStore extends ChangeNotifier {
   }
 
   /// إضافة إعلان — يظهر في البانر المتحرك بالرئيسية
-  Future<void> addAd(String title, String emoji, String badge) async {
+  Future<void> addAd(String title, String emoji, String badge, {String imagePath = ''}) async {
     ads.insert(0, Ad(id: 'ad${DateTime.now().millisecondsSinceEpoch}',
-        title: title, emoji: emoji, badge: badge));
+        title: title, emoji: emoji, badge: badge, imagePath: imagePath));
     await _saveAds();
     notifyListeners();
   }
@@ -153,11 +159,21 @@ class LocalStore extends ChangeNotifier {
     return null;
   }
 
-  /// حفظ المنتجات المنشورة على الموقع (القادمة من API المزامنة)
-  Future<void> setRemoteProducts(List<Product> items) async {
+  /// حفظ بيانات الموقع الكاملة (منتجات + إعلانات + فئات + كوبونات)
+  Future<void> setRemoteData(List<Product> items, List<Ad> ads,
+      List<Map<String, dynamic>> cats, List<Map<String, dynamic>> coupons) async {
     remoteProducts = items;
+    remoteAds = ads;
+    remoteCategories = cats;
+    remoteCoupons = coupons;
     final sp = await SharedPreferences.getInstance();
     await sp.setString(_kRemote, Product.encodeList(items));
+    notifyListeners();
+  }
+
+  /// حفظ طلبات الموقع
+  Future<void> setRemoteOrders(List<Map<String, dynamic>> orders) async {
+    remoteOrders = orders;
     notifyListeners();
   }
 

@@ -26,15 +26,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _timer;
 
   /// إعلانات افتراضية — تُستبدل بالإعلانات المضافة من الإعدادات
-  static const fallbackAds = [
+  static final fallbackAds = [
     Ad(id: 'a1', title: 'خصم افتتاحي 30% على كتاب «أساسيات أدوات الذكاء الاصطناعي»', emoji: '🤖📘', badge: 'جديد'),
     Ad(id: 'a2', title: 'أضف منتجك الأول اليوم — يظهر في متجرك فوراً', emoji: '📱✨', badge: '🚀 انطلق'),
     Ad(id: 'a3', title: 'قسم «التخصصات»: مسارات تعلّم لكل كلية — قريباً', emoji: '🎓📚', badge: 'رفيق الطالب'),
   ];
 
   List<Ad> get _ads {
-    final a = widget.store.ads;
-    return a.isEmpty ? fallbackAds : a;
+    final remote = widget.store.remoteAds;
+    final local = widget.store.ads;
+    final all = [...remote, ...local];
+    return all.isEmpty ? fallbackAds : all;
   }
 
   @override
@@ -157,7 +159,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(child: Text(ad.title,
                     style: const TextStyle(color: Colors.white, fontSize: 12.8, fontWeight: FontWeight.w800, height: 1.5))),
                 const SizedBox(width: 8),
-                Text(ad.emoji, style: const TextStyle(fontSize: 28)),
+                ad.imagePath.startsWith('http')
+                    ? ClipRRect(borderRadius: BorderRadius.circular(10), child: Image.network(ad.imagePath,
+                        width: 44, height: 44, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Text(ad.emoji, style: const TextStyle(fontSize: 28))))
+                    : Text(ad.emoji, style: const TextStyle(fontSize: 28)),
               ]))),
           const SizedBox(height: 6),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [

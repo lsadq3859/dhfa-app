@@ -58,7 +58,10 @@ class _SyncScreenState extends State<SyncScreen> {
           _row('📤 منتجات بانتظار الرفع', '${st.pendingSync}'),
           _row('📥 طلبات معلقة بالموقع', '${st.pendingOrders}'),
           _row('💾 المنتجات على جهازك', '${st.products.length}'),
-          _row('📚 منتجات منشورة على الموقع', '${st.remoteProducts.length}', last: true),
+          _row('📚 منتجات منشورة على الموقع', '${st.remoteProducts.length}'),
+          _row('🗂️ تصنيفات من الموقع', '${st.remoteCategories.length}'),
+          _row('🎟️ كوبونات نشطة', '${st.remoteCoupons.length}'),
+          _row('🧾 طلبات محمّلة من الموقع', '${st.remoteOrders.length}', last: true),
         ])),
         const SizedBox(height: 14),
         ElevatedButton.icon(

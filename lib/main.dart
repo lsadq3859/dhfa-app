@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'theme.dart';
 import 'store.dart';
 import 'sync_service.dart';
@@ -85,6 +86,20 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int index = 0;
+  DateTime? _lastBack;
+
+  void _handleBack() {
+    if (index != 0) { setState(() => index = 0); return; }
+    final now = DateTime.now();
+    if (_lastBack != null && now.difference(_lastBack!) < const Duration(seconds: 2)) {
+      SystemNavigator.pop();
+    } else {
+      _lastBack = now;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('اضغط مرة أخرى للخروج من التطبيق'),
+          behavior: SnackBarBehavior.floating));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +110,10 @@ class _MainShellState extends State<MainShell> {
       SyncScreen(store: widget.store, sync: widget.sync, offline: widget.offline),
       AdminScreen(store: widget.store, offline: widget.offline, autofocusForm: false),
     ];
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) { if (!didPop) _handleBack(); },
+      child: Scaffold(
       body: Column(children: [
         if (widget.offline)
           Container(width: double.infinity, color: Dhfa.gold2, padding: const EdgeInsets.symmetric(vertical: 4),
@@ -118,6 +136,7 @@ class _MainShellState extends State<MainShell> {
           _tab(2, Icons.sync_rounded, 'المزامنة'),
           _tab(3, Icons.settings_rounded, 'الإعدادات'),
         ])),
+      ),
       ),
     );
   }

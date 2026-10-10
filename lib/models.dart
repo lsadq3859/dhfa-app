@@ -10,16 +10,21 @@ class Product {
   final String fileUrl;  // رابط مباشر للملف (PDF)
   final String filePath; // مسار ملف مرفوع من الجهاز
   final String fileName; // اسم الملف المرفوع
+  final String imagePath; // صورة محلية مختارة من الجهاز
+  final String remoteImage; // مسار الصورة على الموقع
+  final bool isRemote; // من الموقع؟
   bool synced;
 
   Product({required this.id, required this.title, required this.price,
       required this.section, required this.emoji, this.desc = '',
-      this.fileUrl = '', this.filePath = '', this.fileName = '', this.synced = true});
+      this.fileUrl = '', this.filePath = '', this.fileName = '',
+      this.imagePath = '', this.remoteImage = '', this.isRemote = false, this.synced = true});
 
   Map<String, dynamic> toJson() => {
     'id': id, 'title': title, 'price': price,
     'section': section, 'emoji': emoji, 'synced': synced,
     'desc': desc, 'fileUrl': fileUrl, 'filePath': filePath, 'fileName': fileName,
+    'imagePath': imagePath, 'remoteImage': remoteImage, 'isRemote': isRemote,
   };
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
@@ -29,7 +34,10 @@ class Product {
     desc: j['desc'] as String? ?? '',
     fileUrl: j['fileUrl'] as String? ?? '',
     filePath: j['filePath'] as String? ?? '',
-    fileName: j['fileName'] as String? ?? '');
+    fileName: j['fileName'] as String? ?? '',
+    imagePath: j['imagePath'] as String? ?? '',
+    remoteImage: j['remoteImage'] as String? ?? '',
+    isRemote: j['isRemote'] as bool? ?? false);
 
   bool get isFree => price == 0;
   bool get hasFile => fileUrl.isNotEmpty || filePath.isNotEmpty;
@@ -49,13 +57,15 @@ class Ad {
   final String title;
   final String emoji;
   final String badge;
-  const Ad({required this.id, required this.title, required this.emoji, required this.badge});
+  final String imagePath;
+  Ad({required this.id, required this.title, required this.emoji, required this.badge, this.imagePath = ''});
 
-  Map<String, dynamic> toJson() => {'id': id, 'title': title, 'emoji': emoji, 'badge': badge};
+  Map<String, dynamic> toJson() => {'id': id, 'title': title, 'emoji': emoji, 'badge': badge, 'imagePath': imagePath};
 
   factory Ad.fromJson(Map<String, dynamic> j) => Ad(
       id: j['id'] as String, title: j['title'] as String,
-      emoji: j['emoji'] as String? ?? '📣', badge: j['badge'] as String? ?? 'جديد');
+      emoji: j['emoji'] as String? ?? '📣', badge: j['badge'] as String? ?? 'جديد',
+      imagePath: j['imagePath'] as String? ?? '');
 
   static String encodeList(List<Ad> items) =>
       jsonEncode(items.map((e) => e.toJson()).toList());

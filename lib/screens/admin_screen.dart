@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../store.dart';
@@ -23,6 +24,8 @@ class _AdminScreenState extends State<AdminScreen> {
   String section = 'كتب';
   String? fileName;
   String? filePath;
+  String? prodImagePath;
+  String? adImagePath;
   bool picking = false;
 
   final oldPw = TextEditingController();
@@ -84,6 +87,8 @@ class _AdminScreenState extends State<AdminScreen> {
         _in(fileUrl, 'رابط الملف (PDF) — رابط مباشر', t: TextInputType.url, ltr: true),
         const SizedBox(height: 8),
         _attachRow(),
+          const SizedBox(height: 8),
+          _imageRow(),
         const SizedBox(height: 12),
         SizedBox(width: double.infinity, child: ElevatedButton.icon(
           style: ElevatedButton.styleFrom(backgroundColor: Dhfa.gold, foregroundColor: Colors.white,
@@ -110,6 +115,17 @@ class _AdminScreenState extends State<AdminScreen> {
           const SizedBox(width: 8),
           SizedBox(width: 80, child: _in(adEmoji, 'أيقونة')),
         ]),
+        const SizedBox(height: 8),
+        GestureDetector(onTap: () => _pickImage((v) => adImagePath = v), child: Container(
+          width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          decoration: BoxDecoration(color: const Color(0xFFFBFAF6), borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E0D2))),
+          child: Row(children: [
+            Icon(Icons.image_rounded, color: Dhfa.navy, size: 19),
+            const SizedBox(width: 8),
+            Expanded(child: Text(adImagePath == null ? '📷 صورة الإعلان (اختياري)' : '📷 صورة مختارة ✓',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Dhfa.navy))),
+          ]))),
         const SizedBox(height: 8),
         SizedBox(width: double.infinity, child: OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: Dhfa.navy,
@@ -214,6 +230,19 @@ class _AdminScreenState extends State<AdminScreen> {
     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18),
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)]), child: child);
 
+  Widget _imageRow() => GestureDetector(onTap: () => _pickImage((v) => prodImagePath = v),
+    child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(color: const Color(0xFFFBFAF6), borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E0D2))),
+      child: Row(children: [
+        prodImagePath != null
+            ? ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.file(File(prodImagePath!), width: 34, height: 34, fit: BoxFit.cover))
+            : Icon(Icons.image_rounded, color: Dhfa.navy, size: 19),
+        const SizedBox(width: 8),
+        Expanded(child: Text(prodImagePath == null ? '📷 صورة المنتج (اختياري)' : '📷 صورة مختارة ✓',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Dhfa.navy))),
+      ])));
+
   Widget _attachRow() => GestureDetector(onTap: picking ? null : _pickFile,
     child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       decoration: BoxDecoration(color: const Color(0xFFFBFAF6), borderRadius: BorderRadius.circular(12),
@@ -270,6 +299,13 @@ class _AdminScreenState extends State<AdminScreen> {
       ])));
   }
 
+  Future<void> _pickImage(void Function(String) onPicked) async {
+    final r = await FilePicker.platform.pickFiles(type: FileType.image);
+    if (r != null && r.files.isNotEmpty && r.files.first.path != null) {
+      onPicked(r.files.first.path!);
+    }
+  }
+
   Future<void> _save() async {
     final t = title.text.trim();
     final p = int.tryParse(price.text.trim()) ?? 0;
@@ -278,7 +314,8 @@ class _AdminScreenState extends State<AdminScreen> {
     await widget.store.addProduct(title: t, price: p, section: section,
         emoji: emoji.text.trim().isEmpty ? '📦' : emoji.text.trim(),
         desc: desc.text.trim(), fileUrl: fileUrl.text.trim(),
-        filePath: filePath ?? '', fileName: fileName ?? '');
+        filePath: filePath ?? '', fileName: fileName ?? '',
+        imagePath: prodImagePath ?? '');
     title.clear(); price.clear(); desc.clear(); fileUrl.clear();
     setState(() { fileName = null; filePath = null; });
     if (!mounted) return;
@@ -292,7 +329,8 @@ class _AdminScreenState extends State<AdminScreen> {
     if (t.isEmpty) { _snack('✍️ اكتب نص الإعلان أولاً'); return; }
     await widget.store.addAd(t,
         adEmoji.text.trim().isEmpty ? '📣' : adEmoji.text.trim(),
-        adBadge.text.trim().isEmpty ? 'جديد' : adBadge.text.trim());
+        adBadge.text.trim().isEmpty ? 'جديد' : adBadge.text.trim(),
+        imagePath: adImagePath ?? '');
     adTitle.clear();
     if (!mounted) return;
     _snack('📣 نُشر الإعلان — سيظهر في بانر الرئيسية');

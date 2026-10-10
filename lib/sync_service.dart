@@ -72,6 +72,8 @@ class SyncService {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         final n = (body['pending_orders'] as num?)?.toInt();
         if (n != null) await store.setPendingOrders(n);
+        final ords = ((body['orders'] as List?) ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        await store.setRemoteOrders(ords);
         return n;
       }
     } catch (_) {/* صامت: تبقى القيمة المحلية */}
@@ -95,9 +97,17 @@ class SyncService {
               'section': _sectionOf(e['section']?.toString() ?? ''),
               'emoji': '📚',
               'desc': e['description']?.toString() ?? '',
+              'remoteImage': e['image']?.toString() ?? '',
+              'isRemote': true,
               'synced': true,
             })).toList();
-        await store.setRemoteProducts(items);
+        final rAds = ((body['ads'] as List?) ?? []).map((e) => Ad(
+              id: 'r${e['id']}', title: (e['title'] ?? '').toString(),
+              emoji: '📣', badge: (e['badge'] ?? '').toString(),
+              imagePath: (e['image'] ?? '').toString())).toList();
+        final cats = ((body['categories'] as List?) ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        final cops = ((body['coupons'] as List?) ?? []).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        await store.setRemoteData(items, rAds, cats, cops);
         return items.length;
       }
     } catch (_) {/* صامت */}
