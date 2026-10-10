@@ -55,3 +55,51 @@ jobs:
         with:
           name: tatbiq-dhfa-v1-3
           path: build/app/outputs/flutter-apk/app-debug.apk
+
+  build-customer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: تهيئة مشروع Android (نسخة العملاء)
+        run: |
+          flutter create -t app --platforms android --org dev.dhfa --project-name dhfa_app .
+          rm -rf test analysis_options.y*ml
+          rm -rf android/app/src/main/res/mipmap-*
+          cp -rf android_res_icons/* android/app/src/main/res/
+          rm -rf android_res_icons
+          sed -i 's/android:label="dhfa_app"/android:label="دهفة"/' android/app/src/main/AndroidManifest.xml
+
+      - name: فحص الكود
+        run: |
+          flutter pub get
+          flutter analyze
+
+      - name: إعداد موارد البناء
+        run: |
+          cat > android/gradle.properties <<'PROPS'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          kotlin.compiler.execution.strategy=in-process
+          android.useAndroidX=true
+          PROPS
+
+      - name: بناء نسخة العملاء
+        run: flutter build apk --debug --dart-define=DHFA_CUSTOMER=true
+
+      - name: رفع APK العملاء
+        uses: actions/upload-artifact@v4
+        with:
+          name: dhfa-customer-v1-7
+          path: build/app/outputs/flutter-apk/app-debug.apk

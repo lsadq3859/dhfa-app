@@ -9,6 +9,9 @@ import 'screens/shop_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/sync_screen.dart';
 
+/// نسخة العملاء (قوقل بلاي) تُبنى بـ: --dart-define=DHFA_CUSTOMER=true
+const bool kCustomer = bool.fromEnvironment('DHFA_CUSTOMER');
+
 void main() => runApp(const DhfaApp());
 
 class DhfaApp extends StatelessWidget {
@@ -46,6 +49,7 @@ class _LoginGateState extends State<LoginGate> {
     store.load();
     sync.restore();
     Dhfa.palette.restore();
+    if (kCustomer) loggedIn = true; // نسخة العملاء تدخل مباشرة بلا بوابة
   }
 
   void _onStore() {
@@ -103,7 +107,11 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = <Widget>[
+    final pages = kCustomer ? <Widget>[
+      HomeScreen(store: widget.store, sync: widget.sync, offline: false,
+          onToggleOffline: (_) {}, onGoTab: (i) => setState(() => index = i)),
+      ShopScreen(store: widget.store),
+    ] : <Widget>[
       HomeScreen(store: widget.store, sync: widget.sync, offline: widget.offline,
           onToggleOffline: widget.onToggleOffline, onGoTab: (i) => setState(() => index = i)),
       ShopScreen(store: widget.store),
@@ -121,7 +129,7 @@ class _MainShellState extends State<MainShell> {
                 textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700))),
         Expanded(child: IndexedStack(index: index, children: pages)),
       ]),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: kCustomer ? null : FloatingActionButton(
         backgroundColor: Dhfa.gold,
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (_) => AdminScreen(store: widget.store, offline: widget.offline, autofocusForm: true))),
@@ -129,7 +137,10 @@ class _MainShellState extends State<MainShell> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(), notchMargin: 8, color: Colors.white,
-        child: SizedBox(height: 60, child: Row(children: [
+        child: SizedBox(height: 60, child: kCustomer ? Row(children: [
+          _tab(0, Icons.home_rounded, 'الرئيسية'),
+          _tab(1, Icons.storefront_rounded, 'المتجر'),
+        ]) : Row(children: [
           _tab(0, Icons.home_rounded, 'الرئيسية'),
           _tab(1, Icons.storefront_rounded, 'المتجر'),
           const SizedBox(width: 56),
