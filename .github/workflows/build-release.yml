@@ -1,4 +1,4 @@
-name: بناء AAB موقّع — نسخة العملاء لقوقل بلاي
+name: بناء AAB موقع لنسخة العملاء
 
 on:
   workflow_dispatch:
@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: تهيئة Android + مفتاح التوقيع
+      - name: تهيئة Android ومفتاح التوقيع
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
         run: |
@@ -31,33 +31,11 @@ jobs:
           sed -i 's/android:label="dhfa_app"/android:label="دهفة"/' android/app/src/main/AndroidManifest.xml
           echo "$KEYSTORE_B64" | base64 -d > /tmp/dhfa-release.jks
 
-      - name: إعداد التوقيع في gradle
+      - name: حقن التوقيع في gradle
         run: |
-          cat > android/gradle.properties <<'PROPS'
-          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
-          org.gradle.daemon=false
-          org.gradle.parallel=false
-          kotlin.compiler.executionStrategy=in-process
-          android.useAndroidX=true
-          PROPS
-          python3 - <<'PY'
-          p='android/app/build.gradle'
-          s=open(p).read()
-          block='''signingConfigs {
-        release {
-            storeFile file("/tmp/dhfa-release.jks")
-            storePassword System.getenv("KEYSTORE_PASS")
-            keyAlias System.getenv("KEY_ALIAS")
-            keyPassword System.getenv("KEY_PASS")
-        }
-    }
-    buildTypes {'''
-          assert 'buildTypes {' in s
-          s = s.replace('buildTypes {', block, 1)
-          s = s.replace('signingConfig signingConfigs.debug', 'signingConfig signingConfigs.release')
-          open(p,'w').write(s)
-          print('gradle signing injected')
-          PY
+          printf 'org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\norg.gradle.daemon=false\norg.gradle.parallel=false\nandroid.useAndroidX=true\n' > android/gradle.properties
+          sed -i 's|signingConfig signingConfigs.debug|signingConfig signingConfigs.release|' android/app/build.gradle
+          sed -i 's|buildTypes {|signingConfigs { release { storeFile file("/tmp/dhfa-release.jks") storePassword System.getenv("KEYSTORE_PASS") keyAlias System.getenv("KEY_ALIAS") keyPassword System.getenv("KEY_PASS") } } buildTypes {|' android/app/build.gradle
 
       - name: بناء AAB موقع (نسخة العملاء)
         env:
