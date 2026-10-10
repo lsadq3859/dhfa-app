@@ -1,0 +1,55 @@
+name: بناء تطبيق دهفة v1.3
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: تهيئة مشروع Android
+        run: |
+          flutter create -t app --platforms android --org dev.dhfa --project-name dhfa_app .
+          rm -rf test analysis_options.y*ml
+          # حقن أيقونة دهفة (الكتاب وقبعة التخرج) بدل أيقونة فلاتر الافتراضية
+          rm -rf android/app/src/main/res/mipmap-*
+          cp -rf android_res_icons/* android/app/src/main/res/
+          rm -rf android_res_icons
+
+      - name: فحص الكود
+        run: |
+          flutter pub get
+          flutter analyze
+
+      - name: إعداد موارد البناء
+        run: |
+          cat > android/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          kotlin.compiler.execution.strategy=in-process
+          android.useAndroidX=true
+          EOF
+
+      - name: البناء
+        run: flutter build apk --debug
+
+      - name: رفع APK (v1.3)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatbiq-dhfa-v1-3
+          path: build/app/outputs/flutter-apk/app-debug.apk
